@@ -1,0 +1,42 @@
+                                                                           QUERY PLAN                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop Semi Join  (cost=58913.14..2810371.25 rows=1074 width=52) (actual time=281.489..207360.411 rows=1804 loops=1)
+   ->  Gather Merge  (cost=4229.46..4685.34 rows=4000 width=56) (actual time=75.242..107.609 rows=4054 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         ->  Sort  (cost=3229.45..3235.33 rows=2353 width=56) (actual time=39.595..40.798 rows=2027 loops=2)
+               Sort Key: supplier.s_name
+               Sort Method: quicksort  Memory: 374kB
+               Worker 0:  Sort Method: quicksort  Memory: 46kB
+               ->  Hash Join  (cost=1.32..3097.68 rows=2353 width=56) (actual time=1.063..17.114 rows=2027 loops=2)
+                     Hash Cond: (supplier.s_nationkey = nation.n_nationkey)
+                     ->  Parallel Seq Scan on supplier  (cost=0.00..2852.24 rows=58824 width=60) (actual time=0.467..11.122 rows=50000 loops=2)
+                     ->  Hash  (cost=1.31..1.31 rows=1 width=4) (actual time=0.490..0.491 rows=1 loops=2)
+                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                           ->  Seq Scan on nation  (cost=0.00..1.31 rows=1 width=4) (actual time=0.473..0.476 rows=1 loops=2)
+                                 Filter: (n_name = 'CANADA'::bpchar)
+                                 Rows Removed by Filter: 24
+   ->  Hash Semi Join  (cost=54683.68..55371.42 rows=1 width=4) (actual time=51.122..51.122 rows=0 loops=4054)
+         Hash Cond: (partsupp.ps_partkey = part.p_partkey)
+         ->  Index Scan using idx_partsupp_suppkey on partsupp  (cost=0.43..688.10 rows=27 width=8) (actual time=1.323..51.072 rows=41 loops=4054)
+               Index Cond: (ps_suppkey = supplier.s_suppkey)
+               Filter: ((ps_availqty)::numeric > (SubPlan 1))
+               Rows Removed by Filter: 20
+               SubPlan 1
+                 ->  Aggregate  (cost=8.47..8.48 rows=1 width=32) (actual time=0.601..0.601 rows=1 loops=247287)
+                       ->  Index Scan using idx_lineitem_part_supp on lineitem  (cost=0.44..8.46 rows=1 width=5) (actual time=0.510..0.598 rows=1 loops=247287)
+                             Index Cond: ((l_partkey = partsupp.ps_partkey) AND (l_suppkey = partsupp.ps_suppkey))
+                             Filter: ((l_shipdate >= '1994-01-01'::date) AND (l_shipdate < '1995-01-01 00:00:00'::timestamp without time zone))
+                             Rows Removed by Filter: 6
+         ->  Hash  (cost=54430.69..54430.69 rows=20205 width=4) (actual time=80.693..80.712 rows=21551 loops=1)
+               Buckets: 32768  Batches: 1  Memory Usage: 1014kB
+               ->  Gather  (cost=1000.00..54430.69 rows=20205 width=4) (actual time=0.123..77.292 rows=21551 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     ->  Parallel Seq Scan on part  (cost=0.00..51410.19 rows=8419 width=4) (actual time=0.343..71.885 rows=7184 loops=3)
+                           Filter: ((p_name)::text ~~ 'forest%'::text)
+                           Rows Removed by Filter: 659483
+ Planning Time: 47.430 ms
+ Execution Time: 207361.647 ms
+(38 rows)
+

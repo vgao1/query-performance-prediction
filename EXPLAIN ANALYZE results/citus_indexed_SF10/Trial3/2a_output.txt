@@ -1,0 +1,55 @@
+                                                                                 QUERY PLAN                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1662205.33..1662205.33 rows=1 width=271) (actual time=251392.106..251392.614 rows=4714 loops=1)
+   Sort Key: supplier.s_acctbal DESC, nation.n_name, supplier.s_name, part.p_partkey
+   Sort Method: quicksort  Memory: 1183kB
+   ->  Hash Join  (cost=8583.26..1662205.32 rows=1 width=271) (actual time=247594.768..251388.497 rows=4714 loops=1)
+         Hash Cond: ((part.p_partkey = partsupp.ps_partkey) AND ((SubPlan 1) = partsupp.ps_supplycost))
+         ->  Seq Scan on part  (cost=0.00..70996.38 rows=6720 width=30) (actual time=0.743..393.953 rows=7950 loops=1)
+               Filter: (((p_type)::text ~~ '%TIN'::text) AND (p_size = 19))
+               Rows Removed by Filter: 1992050
+         ->  Hash  (cost=6276.77..6276.77 rows=46899 width=251) (actual time=247541.278..247541.281 rows=1604080 loops=1)
+               Buckets: 32768 (originally 32768)  Batches: 64 (originally 2)  Memory Usage: 7937kB
+               ->  Nested Loop  (cost=54.10..6276.77 rows=46899 width=251) (actual time=1.507..245292.329 rows=1604080 loops=1)
+                     ->  Nested Loop  (cost=53.67..454.29 rows=588 width=245) (actual time=1.195..70.903 rows=20051 loops=1)
+                           ->  Hash Join  (cost=12.14..13.49 rows=1 width=108) (actual time=0.041..0.060 rows=5 loops=1)
+                                 Hash Cond: (nation.n_regionkey = region.r_regionkey)
+                                 ->  Seq Scan on nation  (cost=0.00..1.25 rows=25 width=112) (actual time=0.009..0.016 rows=25 loops=1)
+                                 ->  Hash  (cost=12.12..12.12 rows=1 width=4) (actual time=0.018..0.018 rows=1 loops=1)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                       ->  Seq Scan on region  (cost=0.00..12.12 rows=1 width=4) (actual time=0.011..0.011 rows=1 loops=1)
+                                             Filter: (r_name = 'AMERICA'::bpchar)
+                                             Rows Removed by Filter: 4
+                           ->  Bitmap Heap Scan on supplier  (cost=41.53..400.80 rows=4000 width=145) (actual time=1.351..12.623 rows=4010 loops=5)
+                                 Recheck Cond: (s_nationkey = nation.n_nationkey)
+                                 Heap Blocks: exact=9358
+                                 ->  Bitmap Index Scan on idx_supplier_nation_key  (cost=0.00..40.53 rows=4000 width=0) (actual time=0.944..0.944 rows=4010 loops=5)
+                                       Index Cond: (s_nationkey = nation.n_nationkey)
+                     ->  Index Scan using idx_partsupp_suppkey on partsupp  (cost=0.43..9.10 rows=80 width=14) (actual time=0.208..12.201 rows=80 loops=20051)
+                           Index Cond: (ps_suppkey = supplier.s_suppkey)
+         SubPlan 1
+           ->  Aggregate  (cost=470.49..470.50 rows=1 width=32) (actual time=0.195..0.195 rows=1 loops=12664)
+                 ->  Hash Join  (cost=462.07..470.49 rows=1 width=6) (actual time=0.191..0.194 rows=1 loops=12664)
+                       Hash Cond: (partsupp_1.ps_suppkey = supplier_1.s_suppkey)
+                       ->  Index Scan using idx_partsupp_partkey on partsupp partsupp_1  (cost=0.43..8.77 rows=19 width=10) (actual time=0.183..0.190 rows=4 loops=12664)
+                             Index Cond: (ps_partkey = part.p_partkey)
+                       ->  Hash  (cost=454.29..454.29 rows=588 width=4) (actual time=24.067..24.070 rows=20051 loops=1)
+                             Buckets: 32768 (originally 1024)  Batches: 1 (originally 1)  Memory Usage: 961kB
+                             ->  Nested Loop  (cost=53.67..454.29 rows=588 width=4) (actual time=2.188..21.005 rows=20051 loops=1)
+                                   ->  Hash Join  (cost=12.14..13.49 rows=1 width=4) (actual time=0.088..0.101 rows=5 loops=1)
+                                         Hash Cond: (nation_1.n_regionkey = region_1.r_regionkey)
+                                         ->  Seq Scan on nation nation_1  (cost=0.00..1.25 rows=25 width=8) (actual time=0.012..0.015 rows=25 loops=1)
+                                         ->  Hash  (cost=12.12..12.12 rows=1 width=4) (actual time=0.037..0.038 rows=1 loops=1)
+                                               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                               ->  Seq Scan on region region_1  (cost=0.00..12.12 rows=1 width=4) (actual time=0.019..0.021 rows=1 loops=1)
+                                                     Filter: (r_name = 'AMERICA'::bpchar)
+                                                     Rows Removed by Filter: 4
+                                   ->  Bitmap Heap Scan on supplier supplier_1  (cost=41.53..400.80 rows=4000 width=8) (actual time=0.994..3.664 rows=4010 loops=5)
+                                         Recheck Cond: (s_nationkey = nation_1.n_nationkey)
+                                         Heap Blocks: exact=9358
+                                         ->  Bitmap Index Scan on idx_supplier_nation_key  (cost=0.00..40.53 rows=4000 width=0) (actual time=0.698..0.698 rows=4010 loops=5)
+                                               Index Cond: (s_nationkey = nation_1.n_nationkey)
+ Planning Time: 17.644 ms
+ Execution Time: 251394.237 ms
+(51 rows)
+

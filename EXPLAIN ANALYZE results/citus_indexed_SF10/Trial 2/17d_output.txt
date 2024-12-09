@@ -1,0 +1,19 @@
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=8953281.56..8953281.58 rows=1 width=32) (actual time=6290.792..6290.800 rows=1 loops=1)
+   ->  Nested Loop  (cost=0.44..8953230.98 rows=20233 width=8) (actual time=3.923..6289.509 rows=5444 loops=1)
+         ->  Seq Scan on part  (cost=0.00..70996.38 rows=2024 width=4) (actual time=0.319..306.134 rows=2003 loops=1)
+               Filter: ((p_brand = 'Brand#41'::bpchar) AND (p_container = 'JUMBO CAN'::bpchar))
+               Rows Removed by Filter: 1997997
+         ->  Index Scan using idx_lineitem_part_supp on lineitem  (cost=0.44..4388.35 rows=11 width=17) (actual time=2.609..2.986 rows=3 loops=2003)
+               Index Cond: (l_partkey = part.p_partkey)
+               Filter: (l_quantity < (SubPlan 1))
+               Rows Removed by Filter: 27
+               SubPlan 1
+                 ->  Aggregate  (cost=133.08..133.09 rows=1 width=32) (actual time=0.084..0.084 rows=1 loops=60366)
+                       ->  Index Scan using idx_lineitem_part_supp on lineitem lineitem_1  (cost=0.44..133.00 rows=32 width=5) (actual time=0.002..0.079 rows=31 loops=60366)
+                             Index Cond: (l_partkey = part.p_partkey)
+ Planning Time: 29.631 ms
+ Execution Time: 6291.001 ms
+(15 rows)
+

@@ -1,0 +1,22 @@
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=1533269.56..1533269.57 rows=1 width=32) (actual time=15201.792..15226.027 rows=1 loops=1)
+   ->  Gather  (cost=1533269.32..1533269.53 rows=2 width=64) (actual time=15200.364..15226.006 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial Aggregate  (cost=1532269.32..1532269.33 rows=1 width=64) (actual time=15188.528..15188.531 rows=1 loops=3)
+               ->  Parallel Hash Join  (cost=85764.98..1526497.40 rows=329824 width=33) (actual time=14353.984..15088.470 rows=257876 loops=3)
+                     Hash Cond: (lineitem.l_partkey = part.p_partkey)
+                     ->  Parallel Bitmap Heap Scan on lineitem  (cost=20322.24..1449523.55 rows=329824 width=16) (actual time=175.054..13690.959 rows=257876 loops=3)
+                           Recheck Cond: ((l_shipdate >= '1997-03-01'::date) AND (l_shipdate < '1997-04-01 00:00:00'::timestamp without time zone))
+                           Rows Removed by Index Recheck: 6271497
+                           Heap Blocks: exact=16855 lossy=122071
+                           ->  Bitmap Index Scan on idx_lineitem_shipdate  (cost=0.00..20124.34 rows=791578 width=0) (actual time=162.103..162.104 rows=773629 loops=1)
+                                 Index Cond: ((l_shipdate >= '1997-03-01'::date) AND (l_shipdate < '1997-04-01 00:00:00'::timestamp without time zone))
+                     ->  Parallel Hash  (cost=49326.55..49326.55 rows=833455 width=25) (actual time=522.124..522.124 rows=666667 loops=3)
+                           Buckets: 131072  Batches: 32  Memory Usage: 4896kB
+                           ->  Parallel Seq Scan on part  (cost=0.00..49326.55 rows=833455 width=25) (actual time=0.470..369.484 rows=666667 loops=3)
+ Planning Time: 43.627 ms
+ Execution Time: 15226.282 ms
+(18 rows)
+

@@ -1,0 +1,34 @@
+                                                                             QUERY PLAN                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=112052.01..113071.38 rows=7638 width=72) (actual time=570.372..574.115 rows=7 loops=1)
+   Group Key: (SUBSTRING(customer.c_phone FROM 1 FOR 2))
+   InitPlan 1
+     ->  Finalize Aggregate  (cost=53440.32..53440.33 rows=1 width=32) (actual time=249.048..249.073 rows=1 loops=1)
+           ->  Gather  (cost=53440.10..53440.31 rows=2 width=32) (actual time=249.035..249.061 rows=3 loops=1)
+                 Workers Planned: 2
+                 Workers Launched: 2
+                 ->  Partial Aggregate  (cost=52440.10..52440.11 rows=1 width=32) (actual time=243.392..243.392 rows=1 loops=3)
+                       ->  Parallel Seq Scan on customer customer_1  (cost=0.00..52390.25 rows=19938 width=6) (actual time=0.581..231.191 rows=127290 loops=3)
+                             Filter: ((c_acctbal > 0.00) AND (SUBSTRING(c_phone FROM 1 FOR 2) = ANY ('{31,28,10,17,22,32,18}'::text[])))
+                             Rows Removed by Filter: 372710
+   ->  Gather Merge  (cost=58611.68..59433.74 rows=6364 width=72) (actual time=569.558..574.031 rows=21 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=57611.65..57699.16 rows=3182 width=72) (actual time=308.519..312.386 rows=7 loops=3)
+               Group Key: (SUBSTRING(customer.c_phone FROM 1 FOR 2))
+               ->  Sort  (cost=57611.65..57619.61 rows=3182 width=38) (actual time=307.898..309.135 rows=21188 loops=3)
+                     Sort Key: (SUBSTRING(customer.c_phone FROM 1 FOR 2))
+                     Sort Method: quicksort  Memory: 1449kB
+                     Worker 0:  Sort Method: quicksort  Memory: 1414kB
+                     Worker 1:  Sort Method: quicksort  Memory: 1424kB
+                     ->  Nested Loop Anti Join  (cost=0.43..57426.53 rows=3182 width=38) (actual time=0.639..291.188 rows=21188 loops=3)
+                           ->  Parallel Seq Scan on customer  (cost=0.00..52390.25 rows=7292 width=26) (actual time=0.407..171.677 rows=63602 loops=3)
+                                 Filter: ((c_acctbal > (InitPlan 1).col1) AND (SUBSTRING(c_phone FROM 1 FOR 2) = ANY ('{31,28,10,17,22,32,18}'::text[])))
+                                 Rows Removed by Filter: 436398
+                           ->  Index Only Scan using idx_orders_custkey on orders  (cost=0.43..3.31 rows=18 width=4) (actual time=0.002..0.002 rows=1 loops=190806)
+                                 Index Cond: (o_custkey = customer.c_custkey)
+                                 Heap Fetches: 0
+ Planning Time: 6.119 ms
+ Execution Time: 574.322 ms
+(30 rows)
+

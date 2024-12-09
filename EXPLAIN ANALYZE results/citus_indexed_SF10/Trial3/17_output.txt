@@ -1,0 +1,19 @@
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=9589066.29..9589066.30 rows=1 width=32) (actual time=7277.212..7277.217 rows=1 loops=1)
+   ->  Nested Loop  (cost=0.44..9589012.08 rows=21683 width=8) (actual time=6.593..7275.832 rows=5526 loops=1)
+         ->  Seq Scan on part  (cost=0.00..70996.38 rows=2169 width=4) (actual time=2.113..349.722 rows=2044 loops=1)
+               Filter: ((p_brand = 'Brand#23'::bpchar) AND (p_container = 'MED BOX'::bpchar))
+               Rows Removed by Filter: 1997956
+         ->  Index Scan using idx_lineitem_part_supp on lineitem  (cost=0.44..4388.09 rows=11 width=17) (actual time=2.990..3.387 rows=3 loops=2044)
+               Index Cond: (l_partkey = part.p_partkey)
+               Filter: (l_quantity < (SubPlan 1))
+               Rows Removed by Filter: 27
+               SubPlan 1
+                 ->  Aggregate  (cost=133.08..133.09 rows=1 width=32) (actual time=0.097..0.097 rows=1 loops=61385)
+                       ->  Index Scan using idx_lineitem_part_supp on lineitem lineitem_1  (cost=0.44..133.00 rows=32 width=5) (actual time=0.002..0.090 rows=31 loops=61385)
+                             Index Cond: (l_partkey = part.p_partkey)
+ Planning Time: 29.336 ms
+ Execution Time: 7277.481 ms
+(15 rows)
+

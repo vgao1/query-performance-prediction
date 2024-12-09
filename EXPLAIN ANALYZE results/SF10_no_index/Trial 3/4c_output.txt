@@ -1,0 +1,26 @@
+                                                                          QUERY PLAN                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=1399582.78..1399635.23 rows=5 width=24) (actual time=18652.751..18673.569 rows=5 loops=1)
+   Group Key: orders.o_orderpriority
+   ->  Gather Merge  (cost=1399582.78..1399635.13 rows=10 width=24) (actual time=18644.292..18673.553 rows=15 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=1398582.76..1398633.96 rows=5 width=24) (actual time=18601.455..18631.268 rows=5 loops=3)
+               Group Key: orders.o_orderpriority
+               ->  Sort  (cost=1398582.76..1398599.81 rows=6820 width=16) (actual time=18592.855..18613.351 rows=175313 loops=3)
+                     Sort Key: orders.o_orderpriority
+                     Sort Method: external merge  Disk: 3432kB
+                     Worker 0:  Sort Method: external merge  Disk: 3440kB
+                     Worker 1:  Sort Method: external merge  Disk: 3448kB
+                     ->  Nested Loop Semi Join  (cost=0.56..1398148.47 rows=6820 width=16) (actual time=1.747..18448.055 rows=175313 loops=3)
+                           ->  Parallel Seq Scan on orders  (cost=0.00..355028.81 rows=237308 width=20) (actual time=0.478..1008.875 rows=191289 loops=3)
+                                 Filter: ((o_orderdate >= '1997-05-01'::date) AND (o_orderdate < '1997-08-01 00:00:00'::timestamp without time zone))
+                                 Rows Removed by Filter: 4808711
+                           ->  Index Scan using lineitem_pkey on lineitem  (cost=0.56..172.11 rows=46 width=4) (actual time=0.091..0.091 rows=1 loops=573867)
+                                 Index Cond: (l_orderkey = orders.o_orderkey)
+                                 Filter: (l_commitdate < l_receiptdate)
+                                 Rows Removed by Filter: 1
+ Planning Time: 48.998 ms
+ Execution Time: 18675.090 ms
+(22 rows)
+

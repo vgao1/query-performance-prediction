@@ -1,0 +1,43 @@
+                                                                                   QUERY PLAN                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=112582.85..112848.61 rows=106304 width=36) (actual time=2326.617..2326.651 rows=0 loops=1)
+   Sort Key: (sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric))) DESC
+   Sort Method: quicksort  Memory: 25kB
+   InitPlan 1
+     ->  Finalize Aggregate  (cost=28804.60..28804.62 rows=1 width=32) (actual time=640.515..640.546 rows=1 loops=1)
+           ->  Gather  (cost=28804.49..28804.60 rows=1 width=32) (actual time=639.464..640.535 rows=2 loops=1)
+                 Workers Planned: 1
+                 Workers Launched: 1
+                 ->  Partial Aggregate  (cost=27804.49..27804.50 rows=1 width=32) (actual time=621.746..621.751 rows=1 loops=2)
+                       ->  Nested Loop  (cost=1.76..26397.51 rows=187596 width=10) (actual time=2.099..572.384 rows=160920 loops=2)
+                             ->  Hash Join  (cost=1.32..3097.68 rows=2353 width=4) (actual time=1.436..16.366 rows=2012 loops=2)
+                                   Hash Cond: (supplier_1.s_nationkey = nation_1.n_nationkey)
+                                   ->  Parallel Seq Scan on supplier supplier_1  (cost=0.00..2852.24 rows=58824 width=8) (actual time=0.454..8.293 rows=50000 loops=2)
+                                   ->  Hash  (cost=1.31..1.31 rows=1 width=4) (actual time=0.456..0.456 rows=1 loops=2)
+                                         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                         ->  Seq Scan on nation nation_1  (cost=0.00..1.31 rows=1 width=4) (actual time=0.437..0.440 rows=1 loops=2)
+                                               Filter: (n_name = 'IRAN'::bpchar)
+                                               Rows Removed by Filter: 24
+                             ->  Index Scan using idx_partsupp_suppkey on partsupp partsupp_1  (cost=0.43..9.10 rows=80 width=14) (actual time=0.009..0.263 rows=80 loops=4023)
+                                   Index Cond: (ps_suppkey = supplier_1.s_suppkey)
+   ->  HashAggregate  (cost=64096.42..71994.50 rows=106304 width=36) (actual time=2326.551..2326.553 rows=0 loops=1)
+         Group Key: partsupp.ps_partkey
+         Filter: (sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric)) > (InitPlan 1).col1)
+         Planned Partitions: 16  Batches: 17  Memory Usage: 8337kB  Disk Usage: 15056kB
+         Rows Removed by Filter: 303025
+         ->  Nested Loop  (cost=47.72..42071.49 rows=318913 width=14) (actual time=1.271..1295.921 rows=321840 loops=1)
+               ->  Nested Loop  (cost=47.29..2462.76 rows=4000 width=4) (actual time=1.258..11.100 rows=4023 loops=1)
+                     ->  Seq Scan on nation  (cost=0.00..1.31 rows=1 width=4) (actual time=0.014..0.020 rows=1 loops=1)
+                           Filter: (n_name = 'IRAN'::bpchar)
+                           Rows Removed by Filter: 24
+                     ->  Bitmap Heap Scan on supplier  (cost=47.29..2421.45 rows=4000 width=8) (actual time=1.242..10.066 rows=4023 loops=1)
+                           Recheck Cond: (s_nationkey = nation.n_nationkey)
+                           Heap Blocks: exact=1877
+                           ->  Bitmap Index Scan on idx_supplier_nation_key  (cost=0.00..46.29 rows=4000 width=0) (actual time=1.061..1.061 rows=4023 loops=1)
+                                 Index Cond: (s_nationkey = nation.n_nationkey)
+               ->  Index Scan using idx_partsupp_suppkey on partsupp  (cost=0.43..9.10 rows=80 width=18) (actual time=0.042..0.306 rows=80 loops=4023)
+                     Index Cond: (ps_suppkey = supplier.s_suppkey)
+ Planning Time: 7.180 ms
+ Execution Time: 2330.574 ms
+(39 rows)
+

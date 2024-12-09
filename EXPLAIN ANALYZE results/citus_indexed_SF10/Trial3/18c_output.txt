@@ -1,0 +1,36 @@
+                                                                                                    QUERY PLAN                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=4098172.38..4169828.68 rows=527775 width=71) (actual time=41400.374..41462.948 rows=75 loops=1)
+   Group Key: orders.o_totalprice, orders.o_orderdate, customer.c_name, customer.c_custkey, orders.o_orderkey
+   ->  Gather Merge  (cost=4098172.38..4155534.78 rows=439812 width=71) (actual time=41400.365..41462.891 rows=75 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=4097172.36..4103769.54 rows=219906 width=71) (actual time=41380.661..41380.797 rows=25 loops=3)
+               Group Key: orders.o_totalprice, orders.o_orderdate, customer.c_name, customer.c_custkey, orders.o_orderkey
+               ->  Sort  (cost=4097172.36..4097722.12 rows=219906 width=44) (actual time=41380.650..41380.733 rows=175 loops=3)
+                     Sort Key: orders.o_totalprice DESC, orders.o_orderdate, customer.c_name, customer.c_custkey, orders.o_orderkey
+                     Sort Method: quicksort  Memory: 37kB
+                     Worker 0:  Sort Method: quicksort  Memory: 39kB
+                     Worker 1:  Sort Method: quicksort  Memory: 31kB
+                     ->  Nested Loop  (cost=2766312.87..4070894.02 rows=219906 width=44) (actual time=38945.632..41380.430 rows=175 loops=3)
+                           ->  Hash Join  (cost=2766312.31..3232876.73 rows=54987 width=43) (actual time=38944.855..41368.153 rows=25 loops=3)
+                                 Hash Cond: (orders.o_orderkey = lineitem_1.l_orderkey)
+                                 ->  Parallel Hash Join  (cost=53709.50..503867.67 rows=6250000 width=39) (actual time=7990.935..9927.306 rows=5000000 loops=3)
+                                       Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                       ->  Parallel Seq Scan on orders  (cost=0.00..323772.00 rows=6250000 width=20) (actual time=2.730..5950.085 rows=5000000 loops=3)
+                                       ->  Parallel Hash  (cost=42234.00..42234.00 rows=625000 width=23) (actual time=942.902..942.903 rows=500000 loops=3)
+                                             Buckets: 131072  Batches: 16  Memory Usage: 6240kB
+                                             ->  Parallel Seq Scan on customer  (cost=0.00..42234.00 rows=625000 width=23) (actual time=0.359..833.231 rows=500000 loops=3)
+                                 ->  Hash  (cost=2710953.20..2710953.20 rows=131969 width=4) (actual time=30813.527..30813.528 rows=75 loops=3)
+                                       Buckets: 262144  Batches: 1  Memory Usage: 2051kB
+                                       ->  GroupAggregate  (cost=0.56..2710953.20 rows=131969 width=4) (actual time=563.175..30813.422 rows=75 loops=3)
+                                             Group Key: lineitem_1.l_orderkey
+                                             Filter: (sum(lineitem_1.l_quantity) > '315'::numeric)
+                                             Rows Removed by Filter: 14999925
+                                             ->  Index Scan using idx_lineitem_orderkey on lineitem lineitem_1  (cost=0.56..2405071.85 rows=59988552 width=9) (actual time=0.297..18747.077 rows=59986052 loops=3)
+                           ->  Index Scan using idx_lineitem_orderkey on lineitem  (cost=0.56..13.72 rows=152 width=9) (actual time=0.475..0.485 rows=7 loops=75)
+                                 Index Cond: (l_orderkey = orders.o_orderkey)
+ Planning Time: 52.249 ms
+ Execution Time: 41463.243 ms
+(32 rows)
+

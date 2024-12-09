@@ -1,0 +1,55 @@
+                                                                                          QUERY PLAN                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=455105.61..455187.39 rows=698 width=64) (actual time=154802.510..154806.984 rows=2 loops=1)
+   Group Key: (EXTRACT(year FROM orders.o_orderdate))
+   ->  Gather Merge  (cost=455105.61..455168.29 rows=411 width=96) (actual time=154799.704..154806.966 rows=4 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         ->  Partial GroupAggregate  (cost=454105.60..454122.04 rows=411 width=96) (actual time=154792.575..154795.188 rows=2 loops=2)
+               Group Key: (EXTRACT(year FROM orders.o_orderdate))
+               ->  Sort  (cost=454105.60..454106.63 rows=411 width=148) (actual time=154790.028..154790.691 rows=12127 loops=2)
+                     Sort Key: (EXTRACT(year FROM orders.o_orderdate))
+                     Sort Method: quicksort  Memory: 1143kB
+                     Worker 0:  Sort Method: quicksort  Memory: 1141kB
+                     ->  Hash Join  (cost=451006.55..454087.76 rows=411 width=148) (actual time=154719.693..154786.641 rows=12127 loops=2)
+                           Hash Cond: (supplier.s_nationkey = n2.n_nationkey)
+                           ->  Parallel Hash Join  (cost=451004.98..454079.52 rows=411 width=20) (actual time=154719.503..154782.949 rows=12127 loops=2)
+                                 Hash Cond: (supplier.s_suppkey = lineitem.l_suppkey)
+                                 ->  Parallel Seq Scan on supplier  (cost=0.00..2852.24 rows=58824 width=8) (actual time=0.636..55.606 rows=50000 loops=2)
+                                 ->  Parallel Hash  (cost=451001.31..451001.31 rows=294 width=20) (actual time=154718.811..154718.816 rows=12127 loops=2)
+                                       Buckets: 32768 (originally 1024)  Batches: 1 (originally 1)  Memory Usage: 1848kB
+                                       ->  Parallel Hash Join  (cost=51494.00..451001.31 rows=294 width=20) (actual time=994.050..144147.428 rows=12127 loops=2)
+                                             Hash Cond: (lineitem.l_partkey = part.p_partkey)
+                                             ->  Nested Loop  (cost=14.50..399355.01 rows=44155 width=24) (actual time=9.925..142639.632 rows=1819464 loops=2)
+                                                   ->  Nested Loop  (cost=13.94..228843.03 rows=11041 width=8) (actual time=1.457..62100.032 rows=455180 loops=2)
+                                                         ->  Hash Join  (cost=13.50..44841.25 rows=3677 width=4) (actual time=0.966..830.007 rows=149718 loops=2)
+                                                               Hash Cond: (customer.c_nationkey = n1.n_nationkey)
+                                                               ->  Parallel Seq Scan on customer  (cost=0.00..42234.00 rows=625000 width=8) (actual time=0.511..657.471 rows=750000 loops=2)
+                                                               ->  Hash  (cost=13.49..13.49 rows=1 width=4) (actual time=0.436..0.438 rows=5 loops=2)
+                                                                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                                                     ->  Hash Join  (cost=12.14..13.49 rows=1 width=4) (actual time=0.426..0.432 rows=5 loops=2)
+                                                                           Hash Cond: (n1.n_regionkey = region.r_regionkey)
+                                                                           ->  Seq Scan on nation n1  (cost=0.00..1.25 rows=25 width=8) (actual time=0.007..0.009 rows=25 loops=2)
+                                                                           ->  Hash  (cost=12.12..12.12 rows=1 width=4) (actual time=0.321..0.322 rows=1 loops=2)
+                                                                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                                                                 ->  Seq Scan on region  (cost=0.00..12.12 rows=1 width=4) (actual time=0.311..0.312 rows=1 loops=2)
+                                                                                       Filter: (r_name = 'AMERICA'::bpchar)
+                                                                                       Rows Removed by Filter: 4
+                                                         ->  Index Scan using idx_orders_custkey on orders  (cost=0.43..49.99 rows=5 width=12) (actual time=0.091..0.408 rows=3 loops=299436)
+                                                               Index Cond: (o_custkey = customer.c_custkey)
+                                                               Filter: ((o_orderdate >= '1995-01-01'::date) AND (o_orderdate <= '1996-12-31'::date))
+                                                               Rows Removed by Filter: 7
+                                                   ->  Index Scan using idx_lineitem_orderkey on lineitem  (cost=0.56..13.92 rows=152 width=24) (actual time=0.171..0.176 rows=4 loops=910360)
+                                                         Index Cond: (l_orderkey = orders.o_orderkey)
+                                             ->  Parallel Hash  (cost=51410.19..51410.19 rows=5545 width=4) (actual time=952.961..952.962 rows=6726 loops=2)
+                                                   Buckets: 16384  Batches: 1  Memory Usage: 672kB
+                                                   ->  Parallel Seq Scan on part  (cost=0.00..51410.19 rows=5545 width=4) (actual time=8.454..951.104 rows=6726 loops=2)
+                                                         Filter: ((p_type)::text = 'ECONOMY ANODIZED STEEL'::text)
+                                                         Rows Removed by Filter: 993274
+                           ->  Hash  (cost=1.25..1.25 rows=25 width=108) (actual time=0.138..0.139 rows=25 loops=2)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 10kB
+                                 ->  Seq Scan on nation n2  (cost=0.00..1.25 rows=25 width=108) (actual time=0.125..0.128 rows=25 loops=2)
+ Planning Time: 17.373 ms
+ Execution Time: 154807.228 ms
+(51 rows)
+

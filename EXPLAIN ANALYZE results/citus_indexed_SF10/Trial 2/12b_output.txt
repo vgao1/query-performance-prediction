@@ -1,0 +1,26 @@
+                                                                                                                                 QUERY PLAN                                                                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=2179699.13..2182122.89 rows=7 width=27) (actual time=26956.493..27064.682 rows=2 loops=1)
+   Group Key: lineitem.l_shipmode
+   ->  Gather Merge  (cost=2179699.13..2182122.71 rows=14 width=27) (actual time=26940.345..27064.669 rows=6 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=2178699.10..2181121.07 rows=7 width=27) (actual time=26911.564..26927.001 rows=2 loops=3)
+               Group Key: lineitem.l_shipmode
+               ->  Sort  (cost=2178699.10..2179001.84 rows=121095 width=27) (actual time=26895.147..26905.246 rows=103935 loops=3)
+                     Sort Key: lineitem.l_shipmode
+                     Sort Method: external merge  Disk: 3832kB
+                     Worker 0:  Sort Method: external merge  Disk: 3728kB
+                     Worker 1:  Sort Method: external merge  Disk: 3752kB
+                     ->  Parallel Hash Join  (cost=438519.00..2165577.19 rows=121095 width=27) (actual time=24436.845..26859.290 rows=103935 loops=3)
+                           Hash Cond: (lineitem.l_orderkey = orders.o_orderkey)
+                           ->  Parallel Seq Scan on lineitem  (cost=0.00..1687536.68 rows=121095 width=15) (actual time=13.145..16258.407 rows=103935 loops=3)
+                                 Filter: ((l_shipmode = ANY ('{RAIL,AIR}'::bpchar[])) AND (l_commitdate < l_receiptdate) AND (l_shipdate < l_commitdate) AND (l_receiptdate >= '1994-01-01'::date) AND (l_receiptdate < '1995-01-01 00:00:00'::timestamp without time zone))
+                                 Rows Removed by Filter: 19891416
+                           ->  Parallel Hash  (cost=323772.00..323772.00 rows=6250000 width=20) (actual time=8064.111..8064.112 rows=5000000 loops=3)
+                                 Buckets: 131072  Batches: 128  Memory Usage: 7520kB
+                                 ->  Parallel Seq Scan on orders  (cost=0.00..323772.00 rows=6250000 width=20) (actual time=5.900..7012.837 rows=5000000 loops=3)
+ Planning Time: 13.279 ms
+ Execution Time: 27066.258 ms
+(22 rows)
+

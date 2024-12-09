@@ -1,0 +1,34 @@
+                                                                                        QUERY PLAN                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=382291.84..382678.29 rows=154579 width=44) (actual time=5944.557..5960.788 rows=27840 loops=1)
+   Sort Key: (count(DISTINCT partsupp.ps_suppkey)) DESC, part.p_brand, part.p_type, part.p_size
+   Sort Method: quicksort  Memory: 2509kB
+   ->  GroupAggregate  (cost=286540.54..364212.19 rows=154579 width=44) (actual time=4774.980..5697.285 rows=27840 loops=1)
+         Group Key: part.p_brand, part.p_type, part.p_size
+         ->  Gather Merge  (cost=286540.54..356646.95 rows=601945 width=40) (actual time=4774.923..5511.986 rows=1185296 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               ->  Sort  (cost=285540.51..286167.54 rows=250810 width=40) (actual time=4707.859..5063.099 rows=395099 loops=3)
+                     Sort Key: part.p_brand, part.p_type, part.p_size, partsupp.ps_suppkey
+                     Sort Method: external merge  Disk: 20432kB
+                     Worker 0:  Sort Method: external merge  Disk: 20632kB
+                     Worker 1:  Sort Method: external merge  Disk: 19632kB
+                     ->  Parallel Hash Join  (cost=67887.52..256187.58 rows=250810 width=40) (actual time=1247.729..1556.225 rows=395099 loops=3)
+                           Hash Cond: (partsupp.ps_partkey = part.p_partkey)
+                           ->  Parallel Index Only Scan using partsupp_pkey on partsupp  (cost=3514.46..173437.56 rows=1666646 width=8) (actual time=24.016..586.677 rows=2665173 loops=3)
+                                 Filter: (NOT (ANY (ps_suppkey = (hashed SubPlan 1).col1)))
+                                 Rows Removed by Filter: 1493
+                                 Heap Fetches: 0
+                                 SubPlan 1
+                                   ->  Seq Scan on supplier  (cost=0.00..3514.00 rows=10 width=4) (actual time=0.385..23.398 rows=56 loops=3)
+                                         Filter: ((s_comment)::text ~~ '%Customer%Complaints%'::text)
+                                         Rows Removed by Filter: 99944
+                           ->  Parallel Hash  (cost=61825.46..61825.46 rows=125408 width=40) (actual time=190.030..190.030 rows=98831 loops=3)
+                                 Buckets: 131072  Batches: 4  Memory Usage: 6656kB
+                                 ->  Parallel Seq Scan on part  (cost=0.00..61825.46 rows=125408 width=40) (actual time=5.740..160.592 rows=98831 loops=3)
+                                       Filter: ((p_brand <> 'Brand#13'::bpchar) AND ((p_type)::text !~~ 'SMALL PLATED%'::text) AND (p_size = ANY ('{31,37,6,45,42,5,44,25}'::integer[])))
+                                       Rows Removed by Filter: 567836
+ Planning Time: 9.511 ms
+ Execution Time: 5964.297 ms
+(30 rows)
+

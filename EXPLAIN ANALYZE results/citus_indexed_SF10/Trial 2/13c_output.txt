@@ -1,0 +1,31 @@
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1462983.19..1462983.69 rows=200 width=16) (actual time=9381.545..9412.369 rows=46 loops=1)
+   Sort Key: (count(*)) DESC, (count(orders.o_orderkey)) DESC
+   Sort Method: quicksort  Memory: 26kB
+   ->  HashAggregate  (cost=1462973.55..1462975.55 rows=200 width=16) (actual time=9381.479..9412.306 rows=46 loops=1)
+         Group Key: count(orders.o_orderkey)
+         Batches: 1  Memory Usage: 40kB
+         ->  Finalize HashAggregate  (cost=1396176.67..1440473.55 rows=1500000 width=12) (actual time=8798.762..9247.454 rows=1500000 loops=1)
+               Group Key: customer.c_custkey
+               Planned Partitions: 32  Batches: 33  Memory Usage: 8209kB  Disk Usage: 63216kB
+               ->  Gather  (cost=840654.26..1203989.17 rows=3000000 width=12) (actual time=7558.250..8407.065 rows=1633191 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     ->  Partial HashAggregate  (cost=839654.26..902989.17 rows=1500000 width=12) (actual time=7556.124..8240.498 rows=544397 loops=3)
+                           Group Key: customer.c_custkey
+                           Planned Partitions: 32  Batches: 33  Memory Usage: 8209kB  Disk Usage: 128416kB
+                           Worker 0:  Batches: 33  Memory Usage: 8209kB  Disk Usage: 128512kB
+                           Worker 1:  Batches: 33  Memory Usage: 8209kB  Disk Usage: 128512kB
+                           ->  Parallel Hash Right Join  (cost=52488.50..491642.88 rows=6186869 width=8) (actual time=4139.487..6087.687 rows=5112690 loops=3)
+                                 Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                 ->  Parallel Seq Scan on orders  (cost=0.00..339397.00 rows=6186869 width=8) (actual time=1.496..2946.419 rows=4946017 loops=3)
+                                       Filter: ((o_comment)::text !~~ '%special%deposits%'::text)
+                                       Rows Removed by Filter: 53983
+                                 ->  Parallel Hash  (cost=42234.00..42234.00 rows=625000 width=4) (actual time=457.717..457.718 rows=500000 loops=3)
+                                       Buckets: 262144  Batches: 16  Memory Usage: 5792kB
+                                       ->  Parallel Seq Scan on customer  (cost=0.00..42234.00 rows=625000 width=4) (actual time=0.515..381.127 rows=500000 loops=3)
+ Planning Time: 7.243 ms
+ Execution Time: 9427.438 ms
+(27 rows)
+

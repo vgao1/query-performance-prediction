@@ -1,0 +1,29 @@
+                                                                                QUERY PLAN                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=560811.55..560861.37 rows=5 width=24) (actual time=18848.871..18869.281 rows=5 loops=1)
+   Group Key: orders.o_orderpriority
+   ->  Gather Merge  (cost=560811.55..560861.27 rows=10 width=24) (actual time=18841.903..18869.268 rows=15 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=559811.53..559860.09 rows=5 width=24) (actual time=18803.071..18829.035 rows=5 loops=3)
+               Group Key: orders.o_orderpriority
+               ->  Sort  (cost=559811.53..559827.70 rows=6468 width=16) (actual time=18796.667..18813.880 rows=175313 loops=3)
+                     Sort Key: orders.o_orderpriority
+                     Sort Method: external merge  Disk: 3448kB
+                     Worker 0:  Sort Method: external merge  Disk: 3432kB
+                     Worker 1:  Sort Method: external merge  Disk: 3440kB
+                     ->  Nested Loop Semi Join  (cost=8041.27..559402.13 rows=6468 width=16) (actual time=63.072..18649.549 rows=175313 loops=3)
+                           ->  Parallel Bitmap Heap Scan on orders  (cost=8040.71..351765.85 rows=245052 width=20) (actual time=61.708..6185.710 rows=191289 loops=3)
+                                 Recheck Cond: ((o_orderdate >= '1997-05-01'::date) AND (o_orderdate < '1997-08-01 00:00:00'::timestamp without time zone))
+                                 Rows Removed by Index Recheck: 3623782
+                                 Heap Blocks: exact=11746 lossy=66404
+                                 ->  Bitmap Index Scan on idx_orders_orderdate  (cost=0.00..7893.68 rows=588124 width=0) (actual time=64.299..64.300 rows=573867 loops=1)
+                                       Index Cond: ((o_orderdate >= '1997-05-01'::date) AND (o_orderdate < '1997-08-01 00:00:00'::timestamp without time zone))
+                           ->  Index Scan using idx_lineitem_orderkey on lineitem  (cost=0.56..14.57 rows=51 width=4) (actual time=0.065..0.065 rows=1 loops=573867)
+                                 Index Cond: (l_orderkey = orders.o_orderkey)
+                                 Filter: (l_commitdate < l_receiptdate)
+                                 Rows Removed by Filter: 1
+ Planning Time: 37.394 ms
+ Execution Time: 18871.651 ms
+(25 rows)
+

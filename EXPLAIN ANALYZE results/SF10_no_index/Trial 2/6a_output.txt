@@ -1,0 +1,14 @@
+                                                                                                        QUERY PLAN                                                                                                         
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=1690978.70..1690978.71 rows=1 width=32) (actual time=19829.554..19831.457 rows=1 loops=1)
+   ->  Gather  (cost=1690978.47..1690978.68 rows=2 width=32) (actual time=19829.544..19831.449 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial Aggregate  (cost=1689978.47..1689978.48 rows=1 width=32) (actual time=19823.934..19823.934 rows=1 loops=3)
+               ->  Parallel Seq Scan on lineitem  (cost=0.00..1687543.35 rows=487024 width=12) (actual time=0.363..19734.490 rows=396798 loops=3)
+                     Filter: ((l_shipdate >= '1994-01-01'::date) AND (l_shipdate < '1995-01-01 00:00:00'::timestamp without time zone) AND (l_discount >= 0.01) AND (l_discount <= 0.03) AND (l_quantity < '25'::numeric))
+                     Rows Removed by Filter: 19598553
+ Planning Time: 10.581 ms
+ Execution Time: 19831.539 ms
+(10 rows)
+

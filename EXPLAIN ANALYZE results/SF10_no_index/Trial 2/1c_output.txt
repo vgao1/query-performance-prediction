@@ -1,0 +1,24 @@
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=2303621.65..2303623.60 rows=6 width=236) (actual time=46242.640..46244.783 rows=4 loops=1)
+   Group Key: l_returnflag, l_linestatus
+   ->  Gather Merge  (cost=2303621.65..2303623.05 rows=12 width=236) (actual time=46242.615..46244.707 rows=12 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Sort  (cost=2302621.63..2302621.64 rows=6 width=236) (actual time=46235.446..46235.447 rows=4 loops=3)
+               Sort Key: l_returnflag, l_linestatus
+               Sort Method: quicksort  Memory: 26kB
+               Worker 0:  Sort Method: quicksort  Memory: 26kB
+               Worker 1:  Sort Method: quicksort  Memory: 26kB
+               ->  Partial HashAggregate  (cost=2302621.41..2302621.55 rows=6 width=236) (actual time=46235.380..46235.384 rows=4 loops=3)
+                     Group Key: l_returnflag, l_linestatus
+                     Batches: 1  Memory Usage: 24kB
+                     Worker 0:  Batches: 1  Memory Usage: 24kB
+                     Worker 1:  Batches: 1  Memory Usage: 24kB
+                     ->  Parallel Seq Scan on lineitem  (cost=0.00..1437588.08 rows=24715238 width=25) (actual time=0.586..27596.994 rows=19767128 loops=3)
+                           Filter: (l_shipdate <= '1998-09-11 00:00:00'::timestamp without time zone)
+                           Rows Removed by Filter: 228223
+ Planning Time: 8.511 ms
+ Execution Time: 46244.949 ms
+(20 rows)
+

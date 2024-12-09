@@ -1,0 +1,39 @@
+                                                                          QUERY PLAN                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1625374.09..1625375.35 rows=505 width=104) (actual time=8833.101..8833.137 rows=1 loops=1)
+   Sort Key: supplier.s_suppkey
+   Sort Method: quicksort  Memory: 25kB
+   CTE revenue0
+     ->  Finalize GroupAggregate  (cost=1587607.84..1613936.43 rows=100934 width=36) (actual time=8564.988..8730.849 rows=100000 loops=1)
+           Group Key: lineitem.l_suppkey
+           ->  Gather Merge  (cost=1587607.84..1611160.75 rows=201868 width=36) (actual time=8564.967..8616.480 rows=299796 loops=1)
+                 Workers Planned: 2
+                 Workers Launched: 2
+                 ->  Sort  (cost=1586607.81..1586860.15 rows=100934 width=36) (actual time=8532.670..8543.562 rows=99932 loops=3)
+                       Sort Key: lineitem.l_suppkey
+                       Sort Method: external merge  Disk: 7936kB
+                       Worker 0:  Sort Method: external merge  Disk: 7944kB
+                       Worker 1:  Sort Method: external merge  Disk: 7944kB
+                       ->  Partial HashAggregate  (cost=1565012.75..1575457.16 rows=100934 width=36) (actual time=8145.820..8488.487 rows=99932 loops=3)
+                             Group Key: lineitem.l_suppkey
+                             Planned Partitions: 4  Batches: 21  Memory Usage: 8249kB  Disk Usage: 24000kB
+                             Worker 0:  Batches: 21  Memory Usage: 8249kB  Disk Usage: 28464kB
+                             Worker 1:  Batches: 21  Memory Usage: 8249kB  Disk Usage: 28176kB
+                             ->  Parallel Seq Scan on lineitem  (cost=0.00..1500072.45 rows=940312 width=16) (actual time=1.114..7676.337 rows=757070 loops=3)
+                                   Filter: ((l_shipdate >= '1995-04-01'::date) AND (l_shipdate < '1995-07-01 00:00:00'::timestamp without time zone))
+                                   Rows Removed by Filter: 19238280
+   InitPlan 2
+     ->  Aggregate  (cost=2271.01..2271.03 rows=1 width=32) (actual time=202.677..202.677 rows=1 loops=1)
+           ->  CTE Scan on revenue0 revenue0_1  (cost=0.00..2018.68 rows=100934 width=32) (actual time=0.000..192.508 rows=100000 loops=1)
+   ->  Hash Join  (cost=5686.00..9143.96 rows=505 width=104) (actual time=8832.951..8833.079 rows=1 loops=1)
+         Hash Cond: (revenue0.supplier_no = supplier.s_suppkey)
+         ->  CTE Scan on revenue0  (cost=0.00..2271.01 rows=505 width=36) (actual time=8778.120..8780.106 rows=1 loops=1)
+               Filter: (total_revenue = (InitPlan 2).col1)
+               Rows Removed by Filter: 99999
+         ->  Hash  (cost=3264.00..3264.00 rows=100000 width=72) (actual time=44.641..44.641 rows=100000 loops=1)
+               Buckets: 131072  Batches: 2  Memory Usage: 6100kB
+               ->  Seq Scan on supplier  (cost=0.00..3264.00 rows=100000 width=72) (actual time=0.018..18.958 rows=100000 loops=1)
+ Planning Time: 15.026 ms
+ Execution Time: 8841.390 ms
+(35 rows)
+

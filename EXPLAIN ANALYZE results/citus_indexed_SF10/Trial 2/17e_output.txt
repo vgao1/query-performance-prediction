@@ -1,0 +1,19 @@
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=9352300.06..9352300.07 rows=1 width=32) (actual time=5731.915..5731.921 rows=1 loops=1)
+   ->  Nested Loop  (cost=0.44..9352247.20 rows=21143 width=8) (actual time=2.672..5730.811 rows=5371 loops=1)
+         ->  Seq Scan on part  (cost=0.00..70996.38 rows=2115 width=4) (actual time=0.128..258.140 rows=2025 loops=1)
+               Filter: ((p_brand = 'Brand#53'::bpchar) AND (p_container = 'SM JAR'::bpchar))
+               Rows Removed by Filter: 1997975
+         ->  Index Scan using idx_lineitem_part_supp on lineitem  (cost=0.44..4388.19 rows=11 width=17) (actual time=2.381..2.701 rows=3 loops=2025)
+               Index Cond: (l_partkey = part.p_partkey)
+               Filter: (l_quantity < (SubPlan 1))
+               Rows Removed by Filter: 28
+               SubPlan 1
+                 ->  Aggregate  (cost=133.08..133.09 rows=1 width=32) (actual time=0.076..0.076 rows=1 loops=61070)
+                       ->  Index Scan using idx_lineitem_part_supp on lineitem lineitem_1  (cost=0.44..133.00 rows=32 width=5) (actual time=0.002..0.071 rows=31 loops=61070)
+                             Index Cond: (l_partkey = part.p_partkey)
+ Planning Time: 13.062 ms
+ Execution Time: 5732.055 ms
+(15 rows)
+

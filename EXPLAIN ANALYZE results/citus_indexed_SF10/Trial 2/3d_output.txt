@@ -1,0 +1,38 @@
+                                                                                   QUERY PLAN                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=3117260.84..3124953.45 rows=3077043 width=44) (actual time=28467.668..28576.901 rows=113270 loops=1)
+   Sort Key: (sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))) DESC, orders.o_orderdate
+   Sort Method: external merge  Disk: 3760kB
+   ->  Finalize GroupAggregate  (cost=2191395.44..2596346.56 rows=3077043 width=44) (actual time=28291.120..28521.786 rows=113270 loops=1)
+         Group Key: lineitem.l_orderkey, orders.o_orderdate, orders.o_shippriority
+         ->  Gather Merge  (cost=2191395.44..2525831.00 rows=2564202 width=44) (actual time=28291.107..28457.855 rows=113279 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               ->  Partial GroupAggregate  (cost=2190395.41..2228858.44 rows=1282101 width=44) (actual time=28282.581..28340.345 rows=37760 loops=3)
+                     Group Key: lineitem.l_orderkey, orders.o_orderdate, orders.o_shippriority
+                     ->  Sort  (cost=2190395.41..2193600.67 rows=1282101 width=24) (actual time=28282.556..28292.319 rows=99631 loops=3)
+                           Sort Key: lineitem.l_orderkey, orders.o_orderdate, orders.o_shippriority
+                           Sort Method: external merge  Disk: 3248kB
+                           Worker 0:  Sort Method: external merge  Disk: 3752kB
+                           Worker 1:  Sort Method: external merge  Disk: 3392kB
+                           ->  Parallel Hash Join  (cost=409333.24..2034030.26 rows=1282101 width=24) (actual time=26715.246..28243.953 rows=99631 loops=3)
+                                 Hash Cond: (lineitem.l_orderkey = orders.o_orderkey)
+                                 ->  Parallel Seq Scan on lineitem  (cost=0.00..1437584.38 rows=13230015 width=16) (actual time=1.775..17678.285 rows=10644807 loops=3)
+                                       Filter: (l_shipdate > '1995-03-31'::date)
+                                       Rows Removed by Filter: 9350544
+                                 ->  Parallel Hash  (cost=398804.27..398804.27 rows=605678 width=12) (actual time=7100.773..7100.861 rows=492785 loops=3)
+                                       Buckets: 262144  Batches: 16  Memory Usage: 6432kB
+                                       ->  Parallel Hash Join  (cost=45332.70..398804.27 rows=605678 width=12) (actual time=830.861..7003.130 rows=492785 loops=3)
+                                             Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                             ->  Parallel Seq Scan on orders  (cost=0.00..339397.00 rows=3080242 width=16) (actual time=0.775..5614.370 rows=2462978 loops=3)
+                                                   Filter: (o_orderdate < '1995-03-31'::date)
+                                                   Rows Removed by Filter: 2537022
+                                             ->  Parallel Hash  (cost=43796.50..43796.50 rows=122896 width=4) (actual time=829.368..829.369 rows=99832 loops=3)
+                                                   Buckets: 524288  Batches: 1  Memory Usage: 15872kB
+                                                   ->  Parallel Seq Scan on customer  (cost=0.00..43796.50 rows=122896 width=4) (actual time=0.391..807.271 rows=99832 loops=3)
+                                                         Filter: (c_mktsegment = 'FURNITURE'::bpchar)
+                                                         Rows Removed by Filter: 400168
+ Planning Time: 37.140 ms
+ Execution Time: 28584.719 ms
+(34 rows)
+
