@@ -77,3 +77,66 @@ CREATE INDEX IDX_NATION_REGIONKEY ON NATION (N_REGIONKEY);
 CREATE INDEX IDX_LINEITEM_SHIPDATE ON LINEITEM (L_SHIPDATE, L_DISCOUNT, L_QUANTITY);
 CREATE INDEX IDX_ORDERS_ORDERDATE ON ORDERS (O_ORDERDATE);
 ```
+
+## Query Execution Time Data Collection
+1. Navigate to `Queries` folder in this reposity. In this folder, edit `run_sql_files.sh` file:
+- Replace `<current user>` value of the DB_USER variable with the value you see after running "SELECT current_user;" in PostgreSQL shell
+- Edit DB_HOST and DB_PORT values as needed
+2. For the first trial, 
+  - No index database: use the following variable values:
+      - DB_NAME="tpc"
+      - SQL_FILE_LIST="no_index_queries.txt"
+      - OUTPUT_DIR = "results_no_index_trial1" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+  - Indexed database: use the following variable values:
+      - DB_NAME="tpc_citus_index"
+      - SQL_FILE_LIST="index_queries.txt"
+      - OUTPUT_DIR = "results_index_trial1" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+
+Once all the query variations finish executing for both databases, edit `record_exec_times_csv.py` in the Queries folder:
+  - no_index_folder_name = "results_no_index_trial1/"
+  - index_folder_name = "results_index_trial1/"
+  - output_file_path = "trial1_exec_times.csv"
+
+Lastly, run the Python script, which should generate `trial1_exec_times.csv` file in the Queries folder.
+<br>
+3. For the second trial,
+  - No index database: use the following variable values:
+      - DB_NAME="tpc"
+      - SQL_FILE_LIST="no_index_queries.txt"
+      - OUTPUT_DIR = "results_no_index_trial2" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+  - Indexed database: use the following variable values:
+      - DB_NAME="tpc_citus_index"
+      - SQL_FILE_LIST="index_queries.txt"
+      - OUTPUT_DIR = "results_index_trial2" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+
+Once all the query variations finish executing for both databases, edit `record_exec_times_csv.py` in the Queries folder:
+  - no_index_folder_name = "results_no_index_trial2/"
+  - index_folder_name = "results_index_trial2/"
+  - output_file_path = "trial2_exec_times.csv"
+
+Lastly, run the Python script, which should generate `trial2_exec_times.csv` file in the Queries folder.
+<br>
+4. For the third trial,
+  - No index database: use the following variable values:
+      - DB_NAME="tpc"
+      - SQL_FILE_LIST="no_index_queries.txt"
+      - OUTPUT_DIR = "results_no_index_trial3" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+  - Indexed database: use the following variable values:
+      - DB_NAME="tpc_citus_index"
+      - SQL_FILE_LIST="index_queries.txt"
+      - OUTPUT_DIR = "results_index_trial3" <br>
+    Then, run `./run_sql_files.sh` in the Queries folder.
+
+Once all the query variations finish executing for both databases, edit `record_exec_times_csv.py` in the Queries folder:
+  - no_index_folder_name = "results_no_index_trial3/"
+  - index_folder_name = "results_index_trial3/"
+  - output_file_path = "trial3_exec_times.csv"
+
+Lastly, run the Python script, which should generate `trial3_exec_times.csv` file in the Queries folder.
+<br>
+5. Copy and paste SQL_query column in [trial1_exec_times.csv](https://github.com/vgao1/query-performance-prediction/blob/main/EXPLAIN%20ANALYZE%20results/trial1_exec_times.csv) into your `trial1_exec_times.csv`, `trial2_exec_times.csv`, and `trial3_exec_times.csv` files’ Sql_query column
