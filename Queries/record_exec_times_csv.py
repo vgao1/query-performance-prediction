@@ -1,7 +1,7 @@
 import csv
 # X is trial # (i.e., 1, 2, 3) that should be replaced
-no_index_folder_name = "results_no_index_trial3/"
-index_folder_name = "results_index_trial3/"
+no_index_folder_name = "results_no_index_trialX/"
+index_folder_name = "results_index_trialX/"
 
 no_index_number_file_names = []
 for i in range(1, 23):
@@ -66,7 +66,7 @@ for name in no_index_alphanumeric_file_names:
   generate_row_data(name, no_index_folder_name, 0)
 
 # X is trial # (i.e., 1, 2, 3) that should be replaced
-output_file_path = "trial3_exec_times.csv"
+output_file_path = "trialX_exec_times.csv"
 try:
   with open(output_file_path, mode="w", newline="") as file: 
     writer = csv.writer(file)
