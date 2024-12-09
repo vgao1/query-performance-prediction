@@ -17,7 +17,8 @@
 ```
 for i in `ls *.tbl`; do sed 's/|$//' $i > ${i/tbl/csv}; echo $i; done;
 ```
-Source: https://gist.github.com/yunpengn/6220ffc1b69cee5c861d93754e759d08
+Source: https://gist.github.com/yunpengn/6220ffc1b69cee5c861d93754e759d08 <br>
+Our TPC-H 10GB dataset can be found at https://drive.google.com/drive/folders/1hJCaqAifX3Fx6KSOM1rSJ16Nsu_VTtNq?usp=drive_link
 
 ## PostgreSQL Setup
 1. Install Postgres.app and follow steps on https://postgresapp.com
@@ -140,3 +141,18 @@ Once all the query variations finish executing for both databases, edit `record_
 Lastly, run the Python script, which should generate `trial3_exec_times.csv` file in the Queries folder.
 <br>
 5. Copy and paste SQL_query column in [trial1_exec_times.csv](https://github.com/vgao1/query-performance-prediction/blob/main/EXPLAIN%20ANALYZE%20results/trial1_exec_times.csv) into your `trial1_exec_times.csv`, `trial2_exec_times.csv`, and `trial3_exec_times.csv` files’ Sql_query column
+
+## EXPLAIN ANALYZE results
+- `query_exec_results.csv`: a consolidated file containing data from `trial1_exec_times.csv`, `trial2_exec_times.csv`, `trial3_exec_times.csv`. `query_exec_results.csv`'s additional trial column denotes which trial the row’s data came from
+- `SF10_no_index`: results from executing queries on a database without any indexes for three trials
+- `SF10_indexed`: results from executing queries on a database with the following set of indexes:
+```
+CREATE INDEX idx_l_partkey ON lineitem (l_partkey);
+CREATE INDEX idx_l_quantity ON lineitem (l_quantity);
+CREATE INDEX idx_l_extendedprice ON lineitem (l_extendedprice);
+CREATE INDEX idx_l_partkey_suppkey_shipdate ON lineitem (l_partkey, l_suppkey, l_shipdate);
+CREATE INDEX idx_ps_partkey_suppkey_availqty ON partsupp (ps_partkey, ps_suppkey, ps_availqty);
+```
+
+This is a set of indexes we experimented with but didn’t perform well enough, so we only ran each query once on this database.
+- `SF10_citus_indexed`: results from executing queries on a database with [Citus TPC-H benchmark’s indexes](https://github.com/dimitri/tpch-citus/blob/master/schema/tpch-index.sql) for three trials
