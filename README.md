@@ -156,3 +156,13 @@ CREATE INDEX idx_ps_partkey_suppkey_availqty ON partsupp (ps_partkey, ps_suppkey
 
 This is a set of indexes we experimented with but didn’t perform well enough, so we only ran each query once on this database.
 - `SF10_citus_indexed`: results from executing queries on a database with [Citus TPC-H benchmark’s indexes](https://github.com/dimitri/tpch-citus/blob/master/schema/tpch-index.sql) for three trials
+
+
+## ML Models
+### Env Setup
+Use Google Colab or install all necessary libraries, including
+```
+pandas numpy scipy scikit-learn torch sentence-transformers joblib matplotlib
+```
+
+### Follow the Instructions and Comments in the notebooks to explore our models (in Models/)
